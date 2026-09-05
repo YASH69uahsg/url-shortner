@@ -6,6 +6,7 @@ import CountdownTimer from "@/components/CountdownTimer";
 import BannerAd from "@/components/BannerAd";
 import AdsterraBanner from "@/components/AdsterraBanner";
 import PopunderAd from "@/components/PopunderAd";
+import SocialBarAd from "@/components/SocialBarAd";
 
 interface Step1ClientProps {
   code: string;
@@ -42,6 +43,9 @@ export default function Step1Client({ code, title, token }: Step1ClientProps) {
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       {/* Popunder Ad — fires once on initial page load only, not re-triggered mid-timer */}
       <PopunderAd />
+
+      {/* Social Bar Ad — high CTR notification/chat bar */}
+      <SocialBarAd />
 
       {/* Top Banner Ad — remounts at adKey change for a fresh impression */}
       <AdsterraBanner key={`top-${adKey}`} />

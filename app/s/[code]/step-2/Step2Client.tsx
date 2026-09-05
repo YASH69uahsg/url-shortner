@@ -4,6 +4,7 @@ import { useState } from "react";
 import CountdownTimer from "@/components/CountdownTimer";
 import BannerAd from "@/components/BannerAd";
 import AdsterraBanner from "@/components/AdsterraBanner";
+import SocialBarAd from "@/components/SocialBarAd";
 
 interface Step2ClientProps {
   code: string;
@@ -68,6 +69,9 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      {/* Social Bar Ad — high CTR notification/chat bar */}
+      <SocialBarAd />
+
       {/* Top Banner Ad */}
       <AdsterraBanner />
 
