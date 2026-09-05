@@ -3,6 +3,7 @@
 import { useState } from "react";
 import CountdownTimer from "@/components/CountdownTimer";
 import BannerAd from "@/components/BannerAd";
+import AdsterraBanner from "@/components/AdsterraBanner";
 
 interface Step2ClientProps {
   code: string;
@@ -68,7 +69,7 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       {/* Top Banner Ad */}
-      <BannerAd slot="top" />
+      <AdsterraBanner />
 
       {/* Main Card */}
       <div className="w-full max-w-md animate-fade-in-up">

@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import CountdownTimer from "@/components/CountdownTimer";
 import BannerAd from "@/components/BannerAd";
+import AdsterraBanner from "@/components/AdsterraBanner";
 import PopunderAd from "@/components/PopunderAd";
 
 interface Step1ClientProps {
@@ -43,7 +44,7 @@ export default function Step1Client({ code, title, token }: Step1ClientProps) {
       <PopunderAd />
 
       {/* Top Banner Ad — remounts at adKey change for a fresh impression */}
-      <BannerAd key={`top-${adKey}`} slot="top" />
+      <AdsterraBanner key={`top-${adKey}`} />
 
       {/* Main Card */}
       <div className="w-full max-w-md animate-fade-in-up">
