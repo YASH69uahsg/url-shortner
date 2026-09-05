@@ -16,8 +16,13 @@ interface Step1ClientProps {
 
 export default function Step1Client({ code, title, token }: Step1ClientProps) {
   const [isReady, setIsReady] = useState(false);
+  const [hasClickedAd, setHasClickedAd] = useState(false);
   const [adKey, setAdKey] = useState(0);
   const router = useRouter();
+
+  const smartlinkUrl =
+    process.env.NEXT_PUBLIC_SMARTLINK_URL ||
+    "https://www.profitableratecpmnetwork.com/vbb2rmsm18?key=614b0942276e61481a389fa8f6b830b6";
 
   const handleCountdownComplete = () => {
     setIsReady(true);
@@ -35,7 +40,18 @@ export default function Step1Client({ code, title, token }: Step1ClientProps) {
     }
   }, []);
 
-  const handleProceed = () => {
+  const handleProceed = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // First click: Open Smartlink in new tab and require user to come back
+    if (!hasClickedAd) {
+      window.open(smartlinkUrl, "_blank", "noopener,noreferrer");
+      setHasClickedAd(true);
+      return;
+    }
+
+    // Second click: Navigate to Step 2
     router.push(`/s/${code}/step-2?token=${encodeURIComponent(token)}`);
   };
 
@@ -78,33 +94,47 @@ export default function Step1Client({ code, title, token }: Step1ClientProps) {
           </div>
 
           {/* Status text */}
-          <p className="text-xs text-white/30 mb-6">
-            {isReady
-              ? "You may now proceed to the next step"
-              : "Please wait for the timer to complete..."}
+          <p className="text-xs mb-6 transition-all duration-300">
+            {!isReady ? (
+              <span className="text-white/30">Please wait for the timer to complete...</span>
+            ) : !hasClickedAd ? (
+              <span className="text-amber-400/90 font-medium">⚡ Click the button below &amp; come back to unlock Step 2</span>
+            ) : (
+              <span className="text-emerald-400 font-medium">✅ Ad Verified! Click again to proceed</span>
+            )}
           </p>
 
           {/* Proceed Button */}
           <button
+            type="button"
             onClick={handleProceed}
             disabled={!isReady}
             className={`btn-primary w-full group transition-all duration-500 ${
               isReady
-                ? "animate-fade-in scale-100"
+                ? "animate-fade-in scale-100 animate-glow"
                 : "opacity-40 scale-95"
             }`}
           >
-            Proceed to Step 2
-            <svg
-              className={`w-4 h-4 transition-transform duration-300 ${
-                isReady ? "group-hover:translate-x-1" : ""
-              }`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
+            {!hasClickedAd ? (
+              <>
+                <svg className="w-4 h-4 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                <span>Click &amp; Back to Unlock Step 2</span>
+              </>
+            ) : (
+              <>
+                <span>Proceed to Step 2</span>
+                <svg
+                  className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </>
+            )}
           </button>
         </div>
 
