@@ -7,6 +7,7 @@ import BannerAd from "@/components/BannerAd";
 import AdsterraBanner from "@/components/AdsterraBanner";
 import PopunderAd from "@/components/PopunderAd";
 import SocialBarAd from "@/components/SocialBarAd";
+import AdBlockDetector from "@/components/AdBlockDetector";
 
 interface Step1ClientProps {
   code: string;
@@ -57,6 +58,9 @@ export default function Step1Client({ code, title, token }: Step1ClientProps) {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      {/* Anti-AdBlock Detection Modal */}
+      <AdBlockDetector />
+
       {/* Popunder Ad — fires once on initial page load only, not re-triggered mid-timer */}
       <PopunderAd />
 
@@ -64,7 +68,7 @@ export default function Step1Client({ code, title, token }: Step1ClientProps) {
       <SocialBarAd />
 
       {/* Top Banner Ad — remounts at adKey change for a fresh impression */}
-      <AdsterraBanner key={`top-${adKey}`} />
+      <AdsterraBanner key={`top-${adKey}`} slot="top" />
 
       {/* Main Card */}
       <div className="w-full max-w-md animate-fade-in-up">
@@ -144,8 +148,8 @@ export default function Step1Client({ code, title, token }: Step1ClientProps) {
         </p>
       </div>
 
-      {/* Bottom Banner Ad — remounts at adKey change for a fresh impression */}
-      <BannerAd key={`bottom-${adKey}`} slot="bottom" />
+      {/* Bottom Banner Ad — live Adsterra banner that remounts at adKey change */}
+      <AdsterraBanner key={`bottom-${adKey}`} slot="bottom" />
     </div>
   );
 }

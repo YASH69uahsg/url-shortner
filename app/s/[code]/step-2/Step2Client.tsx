@@ -5,6 +5,7 @@ import CountdownTimer from "@/components/CountdownTimer";
 import BannerAd from "@/components/BannerAd";
 import AdsterraBanner from "@/components/AdsterraBanner";
 import SocialBarAd from "@/components/SocialBarAd";
+import AdBlockDetector from "@/components/AdBlockDetector";
 
 interface Step2ClientProps {
   code: string;
@@ -69,11 +70,14 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      {/* Anti-AdBlock Detection Modal */}
+      <AdBlockDetector />
+
       {/* Social Bar Ad — high CTR notification/chat bar */}
       <SocialBarAd />
 
       {/* Top Banner Ad */}
-      <AdsterraBanner />
+      <AdsterraBanner slot="top" />
 
       {/* Main Card */}
       <div className="w-full max-w-md animate-fade-in-up">
@@ -185,7 +189,7 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
       </div>
 
       {/* Bottom Banner Ad */}
-      <BannerAd slot="bottom" />
+      <AdsterraBanner slot="bottom" />
     </div>
   );
 }

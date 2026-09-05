@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 
 interface AdsterraBannerProps {
+  slot?: "top" | "bottom";
   className?: string;
 }
 
@@ -13,7 +14,10 @@ interface AdsterraBannerProps {
  * ref within a useEffect hook, including cleanup on unmount/re-render to prevent
  * duplicate scripts or memory leaks in Next.js.
  */
-export default function AdsterraBanner({ className = "" }: AdsterraBannerProps) {
+export default function AdsterraBanner({
+  slot = "top",
+  className = "",
+}: AdsterraBannerProps) {
   const bannerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,7 +43,8 @@ export default function AdsterraBanner({ className = "" }: AdsterraBannerProps) 
     // 2. Script for invoking the Adsterra loader
     const invokeScript = document.createElement("script");
     invokeScript.type = "text/javascript";
-    invokeScript.src = "https://www.highrevenueformat.com/3d6571283d31f2967803a7a7f2e10da6/invoke.js";
+    invokeScript.src =
+      "https://www.highrevenueformat.com/3d6571283d31f2967803a7a7f2e10da6/invoke.js";
     invokeScript.async = true;
 
     // Append both scripts into the container
@@ -55,9 +60,13 @@ export default function AdsterraBanner({ className = "" }: AdsterraBannerProps) 
   }, []);
 
   return (
-    <div className={`flex items-center justify-center w-full mb-6 ${className}`}>
+    <div
+      className={`flex items-center justify-center w-full ${
+        slot === "top" ? "mb-6" : "mt-6"
+      } ${className}`}
+    >
       <div
-        id="adsterra-banner-728x90"
+        id={`adsterra-banner-${slot}`}
         ref={bannerRef}
         className="relative flex items-center justify-center rounded-xl overflow-hidden min-h-[90px] w-full max-w-[728px] border border-white/5 bg-white/[0.02] backdrop-blur-sm"
       />
