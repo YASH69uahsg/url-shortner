@@ -122,9 +122,11 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ link }, { status: 201 });
-  } catch {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to create link";
+    console.error("Error creating link in database:", err);
     return NextResponse.json(
-      { error: "Failed to create link" },
+      { error: message },
       { status: 500 }
     );
   }

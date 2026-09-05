@@ -14,8 +14,9 @@ export async function POST(request: NextRequest) {
 
     const adminSecret = process.env.ADMIN_SECRET_KEY;
     if (!adminSecret) {
+      console.error("ADMIN_SECRET_KEY environment variable is not configured");
       return NextResponse.json(
-        { error: "Server configuration error" },
+        { error: "ADMIN_SECRET_KEY is not set in environment variables" },
         { status: 500 }
       );
     }
