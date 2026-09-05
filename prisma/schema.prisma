@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Link {
+  id             String   @id @default(cuid())
+  code           String   @unique // 6-character short code
+  destinationUrl String   // The final destination URL (never exposed to client)
+  title          String?  // Optional friendly title
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  views View[]
+
+  @@index([code])
+  @@index([active])
+}
+
+model View {
+  id        String   @id @default(cuid())
+  linkId    String
+  ip        String?  // Visitor IP (hashed or raw)
+  userAgent String?  // Visitor user agent
+  referer   String?  // Referring URL
+  step      Int      // 1 = step-1 view, 2 = step-2 view
+  createdAt DateTime @default(now())
+
+  link Link @relation(fields: [linkId], references: [id], onDelete: Cascade)
+
+  @@index([linkId])
+  @@index([step])
+  @@index([createdAt])
+}
