@@ -19,7 +19,9 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
   const [hasClickedAd, setHasClickedAd] = useState(false);
   const [error, setError] = useState("");
 
-  const smartlinkUrl = process.env.NEXT_PUBLIC_SMARTLINK_URL || "https://www.profitableratecpmnetwork.com/vbb2rmsm18?key=614b0942276e61481a389fa8f6b830b6";
+  const smartlinkUrl =
+    process.env.NEXT_PUBLIC_MONETAG_DIRECT_LINK ||
+    "https://omg10.com/4/11732678";
 
   const handleCountdownComplete = () => {
     setIsReady(true);
