@@ -9,6 +9,7 @@ interface CountdownTimerProps {
   onTick?: (timeLeft: number) => void;
   size?: number;
   strokeWidth?: number;
+  theme?: "dark" | "light";
 }
 
 export default function CountdownTimer({
@@ -17,6 +18,7 @@ export default function CountdownTimer({
   onTick,
   size = 160,
   strokeWidth = 6,
+  theme = "dark",
 }: CountdownTimerProps) {
   const [timeLeft, setTimeLeft] = useState(seconds);
   const [isComplete, setIsComplete] = useState(false);
@@ -60,7 +62,11 @@ export default function CountdownTimer({
           width: size + 20,
           height: size + 20,
           background: isComplete
-            ? "radial-gradient(circle, rgba(34,197,94,0.4), transparent)"
+            ? theme === "light"
+              ? "radial-gradient(circle, rgba(22,163,74,0.25), transparent)"
+              : "radial-gradient(circle, rgba(34,197,94,0.4), transparent)"
+            : theme === "light"
+            ? "radial-gradient(circle, rgba(99,102,241,0.25), transparent)"
             : "radial-gradient(circle, rgba(124,58,237,0.4), transparent)",
         }}
       />
@@ -77,7 +83,7 @@ export default function CountdownTimer({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="rgba(255,255,255,0.08)"
+          stroke={theme === "light" ? "#e2e8f0" : "rgba(255,255,255,0.08)"}
           strokeWidth={strokeWidth}
         />
 
@@ -87,7 +93,13 @@ export default function CountdownTimer({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke={isComplete ? "#22c55e" : "url(#gradient)"}
+          stroke={
+            isComplete
+              ? theme === "light"
+                ? "#16a34a"
+                : "#22c55e"
+              : "url(#gradient)"
+          }
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -98,9 +110,9 @@ export default function CountdownTimer({
         {/* Gradient definition */}
         <defs>
           <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#8b5cf6" />
-            <stop offset="50%" stopColor="#7c3aed" />
-            <stop offset="100%" stopColor="#6d28d9" />
+            <stop offset="0%" stopColor={theme === "light" ? "#6366f1" : "#8b5cf6"} />
+            <stop offset="50%" stopColor={theme === "light" ? "#4f46e5" : "#7c3aed"} />
+            <stop offset="100%" stopColor={theme === "light" ? "#4338ca" : "#6d28d9"} />
           </linearGradient>
         </defs>
       </svg>
@@ -110,15 +122,23 @@ export default function CountdownTimer({
         <span
           className={`font-display font-bold transition-all duration-300 ${
             isComplete
-              ? "text-3xl text-green-400"
+              ? theme === "light"
+                ? "text-3xl text-emerald-600 font-extrabold"
+                : "text-3xl text-green-400"
               : timeLeft <= 3
-              ? "text-5xl text-red-400 animate-pulse"
+              ? "text-5xl text-red-500 animate-pulse"
+              : theme === "light"
+              ? "text-5xl text-slate-900"
               : "text-5xl text-white"
           }`}
         >
           {isComplete ? "✓" : timeLeft}
         </span>
-        <span className="text-xs text-white/40 mt-1 uppercase tracking-widest">
+        <span
+          className={`text-xs mt-1 uppercase tracking-widest font-medium ${
+            theme === "light" ? "text-slate-500" : "text-white/40"
+          }`}
+        >
           {isComplete ? "Ready" : "seconds"}
         </span>
       </div>
