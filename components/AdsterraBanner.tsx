@@ -1,24 +1,45 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface AdsterraBannerProps {
-  slot?: "top" | "bottom";
+  slot?: "top" | "middle" | "bottom";
   className?: string;
 }
 
 /**
- * Adsterra 728x90 Banner Ad Component
+ * Responsive Adsterra 728x90 Banner Ad Component
  *
- * Safely injects the Adsterra configuration and invoke scripts into a container
- * ref within a useEffect hook, including cleanup on unmount/re-render to prevent
- * duplicate scripts or memory leaks in Next.js.
+ * Safely isolates the Adsterra invoke.js script inside an iframe.
+ * Automatically scales down on mobile screens (< 728px) using CSS transform scaling
+ * so that the entire banner remains 100% visible with zero horizontal overflow/scrolling,
+ * guaranteeing maximum IAB viewability score and CPM.
  */
 export default function AdsterraBanner({
   slot = "top",
   className = "",
 }: AdsterraBannerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  // Measure container width and compute responsive scale factor for mobile
+  useEffect(() => {
+    const updateScale = () => {
+      if (containerRef.current) {
+        const availableWidth = containerRef.current.clientWidth;
+        if (availableWidth > 0 && availableWidth < 728) {
+          setScale(availableWidth / 728);
+        } else {
+          setScale(1);
+        }
+      }
+    };
+
+    updateScale();
+    window.addEventListener("resize", updateScale);
+    return () => window.removeEventListener("resize", updateScale);
+  }, []);
 
   useEffect(() => {
     const iframe = iframeRef.current;
@@ -69,17 +90,33 @@ export default function AdsterraBanner({
     }
   }, []);
 
+  const scaledWidth = 728 * scale;
+  const scaledHeight = 90 * scale;
+
   return (
     <div
+      ref={containerRef}
       className={`flex items-center justify-center w-full ${
-        slot === "top" ? "mb-6" : "mt-6"
+        slot === "top" ? "mb-5" : slot === "middle" ? "my-4" : "mt-6"
       } ${className}`}
     >
       <div
         id={`adsterra-banner-${slot}`}
-        className="relative flex items-center justify-center rounded-xl overflow-hidden min-h-[90px] w-full max-w-[728px] border border-white/5 bg-white/[0.02] backdrop-blur-sm"
+        className="relative flex items-center justify-center rounded-xl overflow-hidden border border-slate-200/80 bg-white shadow-sm transition-all"
+        style={{
+          width: scale < 1 ? `${scaledWidth}px` : "100%",
+          maxWidth: "728px",
+          height: `${scaledHeight}px`,
+        }}
       >
-        <div className="w-full overflow-x-auto flex justify-center py-1 scrollbar-none">
+        <div
+          style={{
+            width: "728px",
+            height: "90px",
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+          }}
+        >
           <iframe
             ref={iframeRef}
             title={`adsterra-banner-${slot}`}

@@ -3,7 +3,6 @@
 import { useState, useRef } from "react";
 import CountdownTimer from "@/components/CountdownTimer";
 import AdsterraBanner from "@/components/AdsterraBanner";
-import MonetagBanner from "@/components/MonetagBanner";
 import SocialBarAd from "@/components/SocialBarAd";
 import AdBlockDetector from "@/components/AdBlockDetector";
 
@@ -17,6 +16,7 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
   const [isTimerComplete, setIsTimerComplete] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [popupBlocked, setPopupBlocked] = useState(false);
   const [error, setError] = useState("");
 
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -25,9 +25,11 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
     process.env.NEXT_PUBLIC_SMARTLINK_URL ||
     "https://www.profitableratecpmnetwork.com/vbb2rmsm18?key=614b0942276e61481a389fa8f6b830b6";
 
+  // Monetag Zone 2 for Step 2
   const monetagDirectLink =
+    process.env.NEXT_PUBLIC_MONETAG_DIRECT_LINK_2 ||
     process.env.NEXT_PUBLIC_MONETAG_DIRECT_LINK ||
-    "https://omg10.com/4/11732678";
+    "https://omg10.com/4/11738605";
 
   const handleCountdownComplete = () => {
     setIsTimerComplete(true);
@@ -46,7 +48,7 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
     try {
       window.open(adsterraSmartlink, "_blank", "noopener,noreferrer");
     } catch {
-      // ignore popup blocking
+      // ignore popup blocking on scroll trigger
     }
 
     setHasScrolled(true);
@@ -59,24 +61,35 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
 
   /**
    * Action 2 (Bottom Button):
-   * Opens Monetag Direct Link in a new tab (Paid Click 4)
-   * and immediately redirects user to destination URL.
+   * Opens Monetag Zone 2 Direct Link in a new tab (Paid Click 4)
+   * with popup-blocker detection & fallback to prevent lost conversions,
+   * then redirects user immediately to destination URL.
    */
   const handleUnlockFinalLink = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     if (isRedirecting) return;
     setError("");
-    setIsRedirecting(true);
 
-    // 1. Open Monetag Direct Link in a new tab (monetization)
+    let isBlocked = false;
     try {
-      window.open(monetagDirectLink, "_blank", "noopener,noreferrer");
+      const popup = window.open(monetagDirectLink, "_blank", "noopener,noreferrer");
+      if (!popup || popup.closed || typeof popup.closed === "undefined") {
+        isBlocked = true;
+      }
     } catch {
-      // ignore popup blocking
+      isBlocked = true;
     }
 
-    // 2. Fetch destination and redirect current page immediately
+    if (isBlocked) {
+      // Browser blocked programmatic popup — show fallback so conversion is not lost
+      setPopupBlocked(true);
+      return;
+    }
+
+    setIsRedirecting(true);
+
+    // Fetch destination and redirect current page immediately
     try {
       const res = await fetch("/api/get-destination", {
         method: "POST",
@@ -148,7 +161,7 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
           </div>
         </header>
 
-        {/* Top 728x90 Banner Ad (Adsterra) */}
+        {/* Top Responsive 728x90 Banner Ad (Adsterra) */}
         <div className="w-full flex justify-center">
           <AdsterraBanner slot="top" />
         </div>
@@ -239,9 +252,9 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
           </div>
         </div>
 
-        {/* In-Content Sponsored Ad Banner (Monetag) */}
-        <div className="w-full">
-          <MonetagBanner theme="light" />
+        {/* Real Impression Middle Ad Unit (Adsterra Responsive Banner) */}
+        <div className="w-full flex justify-center">
+          <AdsterraBanner slot="middle" />
         </div>
 
         {/* Content Card 2: Edge CDN Fast Route */}
@@ -307,6 +320,46 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
           <p className="text-xs sm:text-sm text-slate-500 mb-5 max-w-sm">
             Click the unlock button below to proceed directly to your destination.
           </p>
+
+          {/* Popup-Blocker Fallback Box (Guarantees zero lost conversions on mobile) */}
+          {popupBlocked && (
+            <div className="w-full max-w-md p-4 mb-5 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs flex flex-col items-center gap-2.5 shadow-sm">
+              <div className="flex items-center gap-1.5 font-bold text-amber-800 text-sm">
+                <span>⚠️ Browser Blocked Pop-up</span>
+              </div>
+              <p className="text-center text-amber-700">
+                Please tap the button below to unlock your destination link.
+              </p>
+              <a
+                href={monetagDirectLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={async () => {
+                  setIsRedirecting(true);
+                  try {
+                    const res = await fetch("/api/get-destination", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ code, token }),
+                    });
+                    const data = await res.json();
+                    const destinationUrl = data.url || data.destinationUrl;
+                    if (destinationUrl) {
+                      window.location.replace(destinationUrl);
+                    }
+                  } catch {
+                    setIsRedirecting(false);
+                  }
+                }}
+                className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-center shadow-md flex items-center justify-center gap-2"
+              >
+                <span>Tap to Open &amp; Unlock Destination</span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </a>
+            </div>
+          )}
 
           {/* Error message */}
           {error && (

@@ -2,10 +2,17 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LinkVault — Private URL Shortener",
+  title: "LinkVault — Fast & Secure URL Shortener",
   description:
-    "A private, secure URL shortening service with advanced analytics and monetization capabilities.",
-  robots: "noindex, nofollow", // Private app — no public indexing
+    "A fast, secure, and modern link shortening service with advanced analytics and instant redirection.",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
 };
 
 export default function RootLayout({
