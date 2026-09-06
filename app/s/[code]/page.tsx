@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/tokens";
 import {
@@ -63,10 +63,10 @@ export default async function Step1Page({ params }: Props) {
   // Generate a signed token (5 min TTL)
   const token = generateToken(code, 2, 300);
 
-  // Check active SafeLink Mode
+  // Check active SafeLink Mode — Defaults to "google" (urllinkshort.in style)
   const mode = (process.env.SAFELINK_MODE ||
     process.env.NEXT_PUBLIC_SAFELINK_MODE ||
-    "direct") as "google" | "direct_blog" | "direct";
+    "google") as "google" | "direct_blog" | "direct";
 
   if (mode === "google" || mode === "direct_blog") {
     // 1. Create and store SafeLink session cookie
@@ -80,10 +80,12 @@ export default async function Step1Page({ params }: Props) {
       secure: process.env.NODE_ENV === "production",
     });
 
+    const headerList = await headers();
+    const host = headerList.get("host") || "localhost:3000";
     const searchDomain =
       process.env.SAFELINK_SEARCH_DOMAIN ||
       process.env.NEXT_PUBLIC_SAFELINK_SEARCH_DOMAIN ||
-      "localhost:3000";
+      host;
 
     const articleSlug = getRandomArticleSlug();
 
