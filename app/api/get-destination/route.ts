@@ -79,7 +79,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ url: link.destinationUrl });
+    const response = NextResponse.json({ url: link.destinationUrl });
+    response.cookies.delete("rtg_session");
+    return response;
   } catch {
     return NextResponse.json(
       { error: "Invalid request" },
