@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import CountdownTimer from "@/components/CountdownTimer";
 import AdsterraBanner from "@/components/AdsterraBanner";
 import MonetagBanner from "@/components/MonetagBanner";
@@ -14,19 +14,55 @@ interface Step2ClientProps {
 }
 
 export default function Step2Client({ code, title, token }: Step2ClientProps) {
-  const [isReady, setIsReady] = useState(false);
+  const [isTimerComplete, setIsTimerComplete] = useState(false);
+  const [hasScrolled, setHasScrolled] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState("");
 
-  const smartlinkUrl =
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const adsterraSmartlink =
+    process.env.NEXT_PUBLIC_SMARTLINK_URL ||
+    "https://www.profitableratecpmnetwork.com/vbb2rmsm18?key=614b0942276e61481a389fa8f6b830b6";
+
+  const monetagDirectLink =
     process.env.NEXT_PUBLIC_MONETAG_DIRECT_LINK ||
     "https://omg10.com/4/11732678";
 
   const handleCountdownComplete = () => {
-    setIsReady(true);
+    setIsTimerComplete(true);
   };
 
-  const handleGetLink = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  /**
+   * Action 1 (Upper Button):
+   * Opens Adsterra Smartlink in a new tab (Paid Click 3)
+   * and smoothly auto-scrolls user down to the bottom section.
+   */
+  const handleScrollDown = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // 1. Open Adsterra Smartlink in new tab
+    try {
+      window.open(adsterraSmartlink, "_blank", "noopener,noreferrer");
+    } catch {
+      // ignore popup blocking
+    }
+
+    setHasScrolled(true);
+
+    // 2. Smoothly scroll to bottom
+    setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
+
+  /**
+   * Action 2 (Bottom Button):
+   * Opens Monetag Direct Link in a new tab (Paid Click 4)
+   * and immediately redirects user to destination URL.
+   */
+  const handleUnlockFinalLink = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     if (isRedirecting) return;
@@ -35,7 +71,7 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
 
     // 1. Open Monetag Direct Link in a new tab (monetization)
     try {
-      window.open(smartlinkUrl, "_blank", "noopener,noreferrer");
+      window.open(monetagDirectLink, "_blank", "noopener,noreferrer");
     } catch {
       // ignore popup blocking
     }
@@ -76,11 +112,11 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
       {/* Social Bar Ad */}
       <SocialBarAd />
 
-      {/* Sticky Top Scroll Down Notification Bar */}
-      <div className="sticky top-0 z-30 w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white py-2.5 px-4 text-center shadow-md flex items-center justify-center gap-2">
+      {/* Top Sticky Scroll Down Notification Bar */}
+      <div className="sticky top-0 z-30 w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white py-2 px-4 text-center shadow-md flex items-center justify-center gap-2">
         <span className="animate-bounce text-sm">⬇️</span>
         <span className="text-xs sm:text-sm font-semibold tracking-wide uppercase">
-          Scroll down to get your final destination link
+          Wait for timer &amp; scroll down to unlock final link
         </span>
         <span className="animate-bounce text-sm">⬇️</span>
       </div>
@@ -96,28 +132,84 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
             </div>
             <div>
               <h1 className="text-base font-bold text-slate-900 font-display leading-tight">LinkVault</h1>
-              <p className="text-[11px] text-slate-500">Step 2: Final Destination</p>
+              <p className="text-[11px] text-slate-500">Step 2: Final Destination Gateway</p>
             </div>
           </div>
 
           {/* Progress Indicators */}
           <div className="flex items-center gap-2 text-xs font-semibold">
-            <div className="flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+            <div className="flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
               <span>✓ Step 1</span>
             </div>
-            <div className="flex items-center gap-1 text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse" />
-              <span>Step 2</span>
+            <div className="flex items-center gap-1 text-emerald-800 bg-emerald-100/70 px-2.5 py-0.5 rounded-full border border-emerald-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+              <span>Step 2 of 2</span>
             </div>
           </div>
         </header>
 
-        {/* Top Banner Ad (Adsterra) */}
+        {/* Top 728x90 Banner Ad (Adsterra) */}
         <div className="w-full flex justify-center">
           <AdsterraBanner slot="top" />
         </div>
 
-        {/* Informative Content Card 1: Step 1 Complete */}
+        {/* ========================================================== */}
+        {/* STAGE 1: UPPER TIMER & SCROLL-DOWN TRIGGER CARD           */}
+        {/* ========================================================== */}
+        <div className="w-full p-6 sm:p-7 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col items-center text-center">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center mb-3">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 font-display mb-1">
+            {title ? `Finalizing: ${title}` : "Finalizing Your Destination Link"}
+          </h2>
+          <p className="text-xs text-slate-500 mb-5 max-w-sm">
+            Please wait for the timer to finish, then click the button below to scroll down.
+          </p>
+
+          {/* 8-Second Countdown Timer */}
+          <div className="mb-5">
+            <CountdownTimer
+              seconds={8}
+              theme="light"
+              onComplete={handleCountdownComplete}
+              size={120}
+              strokeWidth={5}
+            />
+          </div>
+
+          {/* Upper Action Button: "Continue to Scroll Down" */}
+          <button
+            type="button"
+            onClick={handleScrollDown}
+            disabled={!isTimerComplete}
+            className={`w-full sm:max-w-md py-3.5 px-6 rounded-xl text-sm font-semibold text-white transition-all duration-300 shadow-md flex items-center justify-center gap-2 ${
+              isTimerComplete
+                ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-500/25 hover:shadow-emerald-500/40 scale-100 cursor-pointer animate-pulse"
+                : "bg-slate-200 text-slate-400 cursor-not-allowed opacity-70 scale-98"
+            }`}
+          >
+            {isTimerComplete ? (
+              <>
+                <span>Continue to Scroll Down</span>
+                <svg className="w-4 h-4 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+              </>
+            ) : (
+              <span>Please wait for timer...</span>
+            )}
+          </button>
+        </div>
+
+        {/* ========================================================== */}
+        {/* STAGE 2: EXTENDED MIDDLE CONTENT CARDS + ADS              */}
+        {/* ========================================================== */}
+
+        {/* Content Card 1: Verification Complete */}
         <div className="w-full p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm flex flex-col gap-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
@@ -126,11 +218,11 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
               </svg>
             </div>
             <div>
-              <h2 className="text-sm sm:text-base font-bold text-slate-900 font-display">
-                Verification Complete — Almost There!
-              </h2>
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 font-display">
+                Verification Complete — Final Link Unlocked
+              </h3>
               <p className="text-xs text-slate-500">
-                You have successfully completed the security validation. Your final destination is ready to open.
+                All cloud security checks passed. The destination URL is verified and ready for instant transfer.
               </p>
             </div>
           </div>
@@ -147,73 +239,74 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
           </div>
         </div>
 
-        {/* Mid-Page In-Content Ad Banner (Monetag) */}
+        {/* In-Content Sponsored Ad Banner (Monetag) */}
         <div className="w-full">
           <MonetagBanner theme="light" />
         </div>
 
-        {/* Informative Content Card 2: Safe Transfer Notice */}
+        {/* Content Card 2: Edge CDN Fast Route */}
         <div className="w-full p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm flex flex-col gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
             <div>
-              <h2 className="text-sm sm:text-base font-bold text-slate-900 font-display">
-                Instant Transfer Guarantee
-              </h2>
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 font-display">
+                High-Speed Cloud Routing
+              </h3>
               <p className="text-xs text-slate-500">
-                Once the countdown finishes, click below to be redirected directly to your destination.
+                Routed through ultra low-latency CDN nodes for immediate destination redirection.
               </p>
             </div>
           </div>
 
           <div className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs text-slate-600">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span>Proxy Status: Ready</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Gateway Status: Online</span>
             </div>
             <div className="font-mono text-[11px] text-slate-500">
-              Target Code: {code.toUpperCase()}
+              Route: {code.toUpperCase()}
             </div>
           </div>
         </div>
 
-        {/* Scroll helper indicator */}
-        <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 animate-pulse">
-          <span>↓ Scroll down to retrieve your final link ↓</span>
+        {/* Content Card 3: Transfer Instructions */}
+        <div className="w-full p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm flex flex-col gap-2">
+          <div className="flex items-center gap-2 text-emerald-600 font-semibold text-xs sm:text-sm">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <span>Instructions to Access Destination:</span>
+          </div>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            1. Click &quot;Continue to Scroll Down&quot; above to reach the final unlock area. <br />
+            2. Click the &quot;Unlock Final Link&quot; button below to open your destination immediately.
+          </p>
         </div>
 
         {/* ========================================================== */}
-        {/* BOTTOM ACTION ZONE: 5-Second Timer + Final Link Button    */}
+        {/* STAGE 3: BOTTOM ACTION ZONE (UNLOCK FINAL LINK)            */}
         {/* ========================================================== */}
-        <div className="w-full p-6 sm:p-8 rounded-2xl bg-white border-2 border-emerald-500/20 shadow-lg shadow-emerald-100 flex flex-col items-center text-center">
-          {/* Icon */}
+        <div
+          ref={bottomRef}
+          className="w-full p-6 sm:p-8 rounded-2xl bg-white border-2 border-emerald-500/30 shadow-xl shadow-emerald-100/50 flex flex-col items-center text-center mt-2"
+        >
+          {/* Lock Icon */}
           <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center mb-4 shadow-sm">
             <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
             </svg>
           </div>
 
-          <h2 className="text-lg sm:text-xl font-bold text-slate-900 font-display mb-1">
+          <h3 className="text-lg sm:text-xl font-bold text-slate-900 font-display mb-1">
             {title ? `Ready: ${title}` : "Your Link is Unlocked!"}
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mb-6 max-w-sm">
-            Click the button below to proceed to your final destination URL.
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-500 mb-5 max-w-sm">
+            Click the unlock button below to proceed directly to your destination.
           </p>
-
-          {/* 5-Second Countdown Timer in Light Mode */}
-          <div className="mb-6">
-            <CountdownTimer
-              seconds={5}
-              theme="light"
-              onComplete={handleCountdownComplete}
-              size={130}
-              strokeWidth={6}
-            />
-          </div>
 
           {/* Error message */}
           {error && (
@@ -230,12 +323,12 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
             {isRedirecting ? (
               <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold">
                 <div className="w-3.5 h-3.5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                Retrieving &amp; opening destination...
+                Unlocking destination...
               </span>
-            ) : !isReady ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-medium">
+            ) : !isTimerComplete ? (
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-100 text-slate-600 text-xs font-medium">
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-                Preparing final link...
+                Wait for upper timer to unlock...
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
@@ -244,13 +337,13 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
             )}
           </div>
 
-          {/* Action Button */}
+          {/* Bottom Action Button: "Unlock Final Link" */}
           <button
             type="button"
-            onClick={handleGetLink}
-            disabled={!isReady || isRedirecting}
+            onClick={handleUnlockFinalLink}
+            disabled={!isTimerComplete || isRedirecting}
             className={`w-full sm:max-w-md py-3.5 px-6 rounded-xl text-sm font-semibold text-white transition-all duration-300 shadow-md flex items-center justify-center gap-2 ${
-              isReady && !isRedirecting
+              isTimerComplete && !isRedirecting
                 ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-500/25 hover:shadow-emerald-500/40 scale-100 cursor-pointer"
                 : "bg-slate-300 text-slate-500 cursor-not-allowed opacity-60 scale-98"
             }`}
@@ -258,7 +351,7 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
             {isRedirecting ? (
               <>
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span>Unlocking destination...</span>
+                <span>Opening destination...</span>
               </>
             ) : (
               <>
