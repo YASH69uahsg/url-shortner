@@ -3,7 +3,6 @@
 import { useState, useRef } from "react";
 import CountdownTimer from "@/components/CountdownTimer";
 import AdsterraBanner from "@/components/AdsterraBanner";
-import PopunderAd from "@/components/PopunderAd";
 import SocialBarAd from "@/components/SocialBarAd";
 import AdBlockDetector from "@/components/AdBlockDetector";
 
@@ -44,9 +43,17 @@ export default function Step1Client({ code, title, token }: Step1ClientProps) {
     e.preventDefault();
     e.stopPropagation();
 
-    // 1. Open Adsterra Smartlink in new tab
+    // 1. Open Adsterra Smartlink in background tab (Popunder behavior)
     try {
-      window.open(adsterraSmartlink, "_blank", "noopener,noreferrer");
+      const adTab = window.open(adsterraSmartlink, "_blank");
+      if (adTab) {
+        try {
+          adTab.blur();
+        } catch {
+          /* ignore cross-origin blur restrictions */
+        }
+      }
+      window.focus();
     } catch {
       // ignore popup blocking on scroll trigger
     }
@@ -71,7 +78,15 @@ export default function Step1Client({ code, title, token }: Step1ClientProps) {
 
     let isBlocked = false;
     try {
-      const popup = window.open(monetagDirectLink, "_blank", "noopener,noreferrer");
+      const popup = window.open(monetagDirectLink, "_blank");
+      if (popup) {
+        try {
+          popup.blur();
+        } catch {
+          /* ignore cross-origin blur */
+        }
+      }
+      window.focus();
       if (!popup || popup.closed || typeof popup.closed === "undefined") {
         isBlocked = true;
       }
@@ -98,9 +113,6 @@ export default function Step1Client({ code, title, token }: Step1ClientProps) {
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col items-center">
       {/* Anti-AdBlock Detection Modal */}
       <AdBlockDetector />
-
-      {/* Popunder Ad */}
-      <PopunderAd />
 
       {/* Social Bar Ad */}
       <SocialBarAd />
@@ -172,7 +184,7 @@ export default function Step1Client({ code, title, token }: Step1ClientProps) {
             type="button"
             onClick={handleScrollDown}
             disabled={!isTimerComplete}
-            className={`w-full sm:max-w-md py-3.5 px-6 rounded-xl text-sm font-semibold text-white transition-all duration-300 shadow-md flex items-center justify-center gap-2 ${
+            className={`relative z-20 w-full sm:max-w-md py-3.5 px-6 rounded-xl text-sm font-semibold text-white transition-all duration-300 shadow-md flex items-center justify-center gap-2 ${
               isTimerComplete
                 ? "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 shadow-indigo-500/25 hover:shadow-indigo-500/40 scale-100 cursor-pointer animate-pulse"
                 : "bg-slate-200 text-slate-400 cursor-not-allowed opacity-70 scale-98"
@@ -351,7 +363,7 @@ export default function Step1Client({ code, title, token }: Step1ClientProps) {
             type="button"
             onClick={handleUnlockStep2}
             disabled={!isTimerComplete || isRedirecting}
-            className={`w-full sm:max-w-md py-3.5 px-6 rounded-xl text-sm font-semibold text-white transition-all duration-300 shadow-md flex items-center justify-center gap-2 ${
+            className={`relative z-20 w-full sm:max-w-md py-3.5 px-6 rounded-xl text-sm font-semibold text-white transition-all duration-300 shadow-md flex items-center justify-center gap-2 ${
               isTimerComplete && !isRedirecting
                 ? "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 shadow-indigo-500/25 hover:shadow-indigo-500/40 scale-100 cursor-pointer"
                 : "bg-slate-300 text-slate-500 cursor-not-allowed opacity-60 scale-98"

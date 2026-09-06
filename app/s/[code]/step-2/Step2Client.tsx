@@ -44,9 +44,17 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
     e.preventDefault();
     e.stopPropagation();
 
-    // 1. Open Adsterra Smartlink in new tab
+    // 1. Open Adsterra Smartlink in background tab (Popunder behavior)
     try {
-      window.open(adsterraSmartlink, "_blank", "noopener,noreferrer");
+      const adTab = window.open(adsterraSmartlink, "_blank");
+      if (adTab) {
+        try {
+          adTab.blur();
+        } catch {
+          /* ignore cross-origin blur */
+        }
+      }
+      window.focus();
     } catch {
       // ignore popup blocking on scroll trigger
     }
@@ -61,7 +69,7 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
 
   /**
    * Action 2 (Bottom Button):
-   * Opens Monetag Zone 2 Direct Link in a new tab (Paid Click 4)
+   * Opens Monetag Zone 2 Direct Link in background tab (Paid Click 4)
    * with popup-blocker detection & fallback to prevent lost conversions,
    * then redirects user immediately to destination URL.
    */
@@ -73,7 +81,15 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
 
     let isBlocked = false;
     try {
-      const popup = window.open(monetagDirectLink, "_blank", "noopener,noreferrer");
+      const popup = window.open(monetagDirectLink, "_blank");
+      if (popup) {
+        try {
+          popup.blur();
+        } catch {
+          /* ignore cross-origin blur */
+        }
+      }
+      window.focus();
       if (!popup || popup.closed || typeof popup.closed === "undefined") {
         isBlocked = true;
       }
@@ -199,7 +215,7 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
             type="button"
             onClick={handleScrollDown}
             disabled={!isTimerComplete}
-            className={`w-full sm:max-w-md py-3.5 px-6 rounded-xl text-sm font-semibold text-white transition-all duration-300 shadow-md flex items-center justify-center gap-2 ${
+            className={`relative z-20 w-full sm:max-w-md py-3.5 px-6 rounded-xl text-sm font-semibold text-white transition-all duration-300 shadow-md flex items-center justify-center gap-2 ${
               isTimerComplete
                 ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-500/25 hover:shadow-emerald-500/40 scale-100 cursor-pointer animate-pulse"
                 : "bg-slate-200 text-slate-400 cursor-not-allowed opacity-70 scale-98"
@@ -395,7 +411,7 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
             type="button"
             onClick={handleUnlockFinalLink}
             disabled={!isTimerComplete || isRedirecting}
-            className={`w-full sm:max-w-md py-3.5 px-6 rounded-xl text-sm font-semibold text-white transition-all duration-300 shadow-md flex items-center justify-center gap-2 ${
+            className={`relative z-20 w-full sm:max-w-md py-3.5 px-6 rounded-xl text-sm font-semibold text-white transition-all duration-300 shadow-md flex items-center justify-center gap-2 ${
               isTimerComplete && !isRedirecting
                 ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-500/25 hover:shadow-emerald-500/40 scale-100 cursor-pointer"
                 : "bg-slate-300 text-slate-500 cursor-not-allowed opacity-60 scale-98"
