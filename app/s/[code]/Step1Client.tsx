@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import CountdownTimer from "@/components/CountdownTimer";
 import BannerAd from "@/components/BannerAd";
 import AdsterraBanner from "@/components/AdsterraBanner";
+import MonetagBanner from "@/components/MonetagBanner";
 import PopunderAd from "@/components/PopunderAd";
 import SocialBarAd from "@/components/SocialBarAd";
 import AdBlockDetector from "@/components/AdBlockDetector";
@@ -148,8 +149,8 @@ export default function Step1Client({ code, title, token }: Step1ClientProps) {
         </p>
       </div>
 
-      {/* Bottom Banner Ad — live Adsterra banner that remounts at adKey change */}
-      <AdsterraBanner key={`bottom-${adKey}`} slot="bottom" />
+      {/* Bottom Banner Ad — Monetag Sponsored Ad Banner */}
+      <MonetagBanner key={`bottom-${adKey}`} />
     </div>
   );
 }

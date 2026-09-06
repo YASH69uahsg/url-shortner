@@ -4,6 +4,7 @@ import { useState } from "react";
 import CountdownTimer from "@/components/CountdownTimer";
 import BannerAd from "@/components/BannerAd";
 import AdsterraBanner from "@/components/AdsterraBanner";
+import MonetagBanner from "@/components/MonetagBanner";
 import SocialBarAd from "@/components/SocialBarAd";
 import AdBlockDetector from "@/components/AdBlockDetector";
 
@@ -190,8 +191,8 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
         </p>
       </div>
 
-      {/* Bottom Banner Ad */}
-      <AdsterraBanner slot="bottom" />
+      {/* Bottom Banner Ad — Monetag Sponsored Ad Banner */}
+      <MonetagBanner />
     </div>
   );
 }
