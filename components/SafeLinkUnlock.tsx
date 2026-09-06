@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import CountdownTimer from "@/components/CountdownTimer";
 import AdXBanner from "@/components/AdXBanner";
+import SocialBarAd from "@/components/SocialBarAd";
 
 interface SafeLinkUnlockProps {
   code: string;
@@ -82,6 +83,9 @@ export default function SafeLinkUnlock({
 
   return (
     <div className="w-full my-6 flex flex-col items-center">
+      {/* Adsterra Social Bar Floating Widget */}
+      <SocialBarAd />
+
       {/* Non-Google Referrer Warning Modal (Anti-bypass) */}
       {hasGoogleReferrer === false && (
         <div className="w-full p-5 mb-6 rounded-2xl bg-amber-50 border-2 border-amber-300 text-amber-900 shadow-md flex flex-col items-center text-center">
