@@ -2,7 +2,7 @@ import { MetadataRoute } from "next";
 import { ARTICLES } from "@/lib/articles-data";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://yashlab.me";
 
   const articleEntries: MetadataRoute.Sitemap = ARTICLES.map((art) => ({
     url: `${baseUrl}/articles/${art.slug}`,
@@ -11,13 +11,38 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
-  return [
+  const staticPages: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/articles`,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 1.0,
     },
-    ...articleEntries,
+    {
+      url: `${baseUrl}/about`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/contact`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/privacy`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/terms`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
   ];
+
+  return [...staticPages, ...articleEntries];
 }
