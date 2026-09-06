@@ -18,45 +18,55 @@ export default function AdsterraBanner({
   slot = "top",
   className = "",
 }: AdsterraBannerProps) {
-  const bannerRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
-    const container = bannerRef.current;
-    if (!container) return;
+    const iframe = iframeRef.current;
+    if (!iframe) return;
 
-    // Reset container to avoid duplicate scripts on re-renders
-    container.innerHTML = "";
+    try {
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (!iframeDoc) return;
 
-    // 1. Script for setting atOptions configuration
-    const confScript = document.createElement("script");
-    confScript.type = "text/javascript";
-    confScript.text = `
-      atOptions = {
-        'key' : '3d6571283d31f2967803a7a7f2e10da6',
-        'format' : 'iframe',
-        'height' : 90,
-        'width' : 728,
-        'params' : {}
-      };
-    `;
-
-    // 2. Script for invoking the Adsterra loader
-    const invokeScript = document.createElement("script");
-    invokeScript.type = "text/javascript";
-    invokeScript.src =
-      "https://www.highrevenueformat.com/3d6571283d31f2967803a7a7f2e10da6/invoke.js";
-    invokeScript.async = true;
-
-    // Append both scripts into the container
-    container.appendChild(confScript);
-    container.appendChild(invokeScript);
-
-    // Cleanup on unmount or remount
-    return () => {
-      if (container) {
-        container.innerHTML = "";
-      }
-    };
+      iframeDoc.open();
+      iframeDoc.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <base target="_blank">
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              html, body {
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+                background: transparent;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              }
+            </style>
+          </head>
+          <body>
+            <script type="text/javascript">
+              atOptions = {
+                'key' : '3d6571283d31f2967803a7a7f2e10da6',
+                'format' : 'iframe',
+                'height' : 90,
+                'width' : 728,
+                'params' : {}
+              };
+            </script>
+            <script type="text/javascript" src="https://www.highrevenueformat.com/3d6571283d31f2967803a7a7f2e10da6/invoke.js"></script>
+          </body>
+        </html>
+      `);
+      iframeDoc.close();
+    } catch (e) {
+      console.error("AdsterraBanner isolation error:", e);
+    }
   }, []);
 
   return (
@@ -67,9 +77,26 @@ export default function AdsterraBanner({
     >
       <div
         id={`adsterra-banner-${slot}`}
-        ref={bannerRef}
         className="relative flex items-center justify-center rounded-xl overflow-hidden min-h-[90px] w-full max-w-[728px] border border-white/5 bg-white/[0.02] backdrop-blur-sm"
-      />
+      >
+        <div className="w-full overflow-x-auto flex justify-center py-1 scrollbar-none">
+          <iframe
+            ref={iframeRef}
+            title={`adsterra-banner-${slot}`}
+            width={728}
+            height={90}
+            style={{
+              border: "none",
+              width: "728px",
+              height: "90px",
+              minWidth: "728px",
+              overflow: "hidden",
+              display: "block",
+            }}
+            scrolling="no"
+          />
+        </div>
+      </div>
     </div>
   );
 }
