@@ -207,7 +207,7 @@ export default function Step1Client({ code, title, token }: Step1ClientProps) {
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
-                ⚡ Link verified! Click below to proceed to Step 2
+                ⚡ Link verified! Click below to unlock Step 2
               </span>
             )}
           </div>
@@ -226,14 +226,14 @@ export default function Step1Client({ code, title, token }: Step1ClientProps) {
             {isRedirecting ? (
               <>
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span>Opening Step 2...</span>
+                <span>Unlocking Step 2...</span>
               </>
             ) : (
               <>
-                <span>Continue to Step 2</span>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
                 </svg>
+                <span>Unlock Step 2</span>
               </>
             )}
           </button>
