@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import CountdownTimer from "@/components/CountdownTimer";
 import AdsterraBanner from "@/components/AdsterraBanner";
 import MonetagBanner from "@/components/MonetagBanner";
@@ -17,8 +16,7 @@ interface Step1ClientProps {
 
 export default function Step1Client({ code, title, token }: Step1ClientProps) {
   const [isReady, setIsReady] = useState(false);
-  const [hasClickedAd, setHasClickedAd] = useState(false);
-  const router = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const smartlinkUrl =
     process.env.NEXT_PUBLIC_SMARTLINK_URL ||
@@ -31,16 +29,21 @@ export default function Step1Client({ code, title, token }: Step1ClientProps) {
   const handleProceed = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isRedirecting) return;
+    setIsRedirecting(true);
 
-    // First click: Open Smartlink in new tab and require user to come back
-    if (!hasClickedAd) {
+    // 1. Open Smartlink ad in new tab (monetization)
+    try {
       window.open(smartlinkUrl, "_blank", "noopener,noreferrer");
-      setHasClickedAd(true);
-      return;
+    } catch {
+      // ignore popup blocking
     }
 
-    // Second click: Navigate to Step 2
-    router.push(`/s/${code}/step-2?token=${encodeURIComponent(token)}`);
+    // 2. Immediately navigate current tab to Step 2
+    const targetUrl = `/s/${code}/step-2?token=${encodeURIComponent(token)}`;
+    setTimeout(() => {
+      window.location.href = targetUrl;
+    }, 150);
   };
 
   return (
@@ -192,18 +195,19 @@ export default function Step1Client({ code, title, token }: Step1ClientProps) {
 
           {/* Status badge */}
           <div className="mb-5">
-            {!isReady ? (
+            {isRedirecting ? (
+              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold">
+                <div className="w-3.5 h-3.5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                Proceeding to Step 2...
+              </span>
+            ) : !isReady ? (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-medium">
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
                 Preparing link destination...
               </span>
-            ) : !hasClickedAd ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold">
-                ⚡ Click the button below &amp; come back to unlock Step 2
-              </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
-                ✅ Ad Verified! Click below to proceed to Step 2
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
+                ⚡ Link verified! Click below to proceed to Step 2
               </span>
             )}
           </div>
@@ -212,23 +216,21 @@ export default function Step1Client({ code, title, token }: Step1ClientProps) {
           <button
             type="button"
             onClick={handleProceed}
-            disabled={!isReady}
+            disabled={!isReady || isRedirecting}
             className={`w-full sm:max-w-md py-3.5 px-6 rounded-xl text-sm font-semibold text-white transition-all duration-300 shadow-md flex items-center justify-center gap-2 ${
-              isReady
+              isReady && !isRedirecting
                 ? "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 shadow-indigo-500/25 hover:shadow-indigo-500/40 scale-100 cursor-pointer"
                 : "bg-slate-300 text-slate-500 cursor-not-allowed opacity-60 scale-98"
             }`}
           >
-            {!hasClickedAd ? (
+            {isRedirecting ? (
               <>
-                <svg className="w-4 h-4 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                </svg>
-                <span>Click &amp; Back to Unlock Step 2</span>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>Opening Step 2...</span>
               </>
             ) : (
               <>
-                <span>Proceed to Step 2</span>
+                <span>Continue to Step 2</span>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>

@@ -16,7 +16,6 @@ interface Step2ClientProps {
 export default function Step2Client({ code, title, token }: Step2ClientProps) {
   const [isReady, setIsReady] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [hasClickedAd, setHasClickedAd] = useState(false);
   const [error, setError] = useState("");
 
   const smartlinkUrl =
@@ -32,17 +31,16 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
     e.stopPropagation();
     if (isRedirecting) return;
     setError("");
-
-    // First click: open Monetag Direct Link in a new tab, then prompt user to click again
-    if (!hasClickedAd) {
-      window.open(smartlinkUrl, "_blank", "noopener,noreferrer");
-      setHasClickedAd(true);
-      return;
-    }
-
-    // Second click: fetch the actual destination and redirect
     setIsRedirecting(true);
 
+    // 1. Open Monetag Direct Link in a new tab (monetization)
+    try {
+      window.open(smartlinkUrl, "_blank", "noopener,noreferrer");
+    } catch {
+      // ignore popup blocking
+    }
+
+    // 2. Fetch destination and redirect current page immediately
     try {
       const res = await fetch("/api/get-destination", {
         method: "POST",
@@ -230,21 +228,17 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
           {/* Status badge */}
           <div className="mb-5">
             {isRedirecting ? (
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold">
-                <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                Redirecting to destination...
+              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold">
+                <div className="w-3.5 h-3.5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                Retrieving &amp; opening destination...
               </span>
             ) : !isReady ? (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-medium">
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
                 Preparing final link...
               </span>
-            ) : hasClickedAd ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
-                ✅ Verified! Click again to open your destination
-              </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
                 ⚡ Ready! Click below to retrieve your link
               </span>
             )}
@@ -265,13 +259,6 @@ export default function Step2Client({ code, title, token }: Step2ClientProps) {
               <>
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 <span>Redirecting...</span>
-              </>
-            ) : hasClickedAd ? (
-              <>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                </svg>
-                <span>Proceed to Final Link</span>
               </>
             ) : (
               <>
