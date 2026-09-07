@@ -14,8 +14,12 @@ export const metadata: Metadata = {
       follow: true,
     },
   },
+  verification: {
+    google: "2dDw_pcs03JLd_24mHbUK73Cdfig4yxet7tYFa9uyHQ",
+  },
   other: {
     "google-adsense-account": "ca-pub-9216546431290162",
+    "google-site-verification": "2dDw_pcs03JLd_24mHbUK73Cdfig4yxet7tYFa9uyHQ",
   },
 };
 
