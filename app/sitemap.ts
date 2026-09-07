@@ -13,10 +13,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const staticPages: MetadataRoute.Sitemap = [
     {
-      url: `${baseUrl}/articles`,
+      url: `${baseUrl}`,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 1.0,
+    },
+    {
+      url: `${baseUrl}/articles`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
     },
     {
       url: `${baseUrl}/about`,
@@ -34,13 +40,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${baseUrl}/privacy`,
       lastModified: new Date(),
       changeFrequency: "monthly",
-      priority: 0.3,
+      priority: 0.4,
     },
     {
       url: `${baseUrl}/terms`,
       lastModified: new Date(),
       changeFrequency: "monthly",
-      priority: 0.3,
+      priority: 0.4,
+    },
+    {
+      url: `${baseUrl}/disclaimer`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.4,
     },
   ];
 
