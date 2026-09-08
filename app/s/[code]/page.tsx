@@ -6,7 +6,9 @@ import {
   SAFELINK_COOKIE_NAME,
   createSafeLinkSession,
 } from "@/lib/safelink";
-import { getRandomArticleSlug } from "@/lib/articles-data";
+import { registerSession } from "@/lib/session-pairing";
+import { MONETIZATION_CONFIG } from "@/lib/monetization-config";
+import { getRandomArticleSlug, getArticleBySlug } from "@/lib/articles-data";
 import Step1Client from "./Step1Client";
 import GoogleRedirectGateway from "@/components/GoogleRedirectGateway";
 
@@ -60,48 +62,65 @@ export default async function Step1Page({ params }: Props) {
       /* silently fail */
     });
 
-  // Generate a signed token (5 min TTL)
-  const token = generateToken(code, 2, 300);
+  // Generate a signed token (10 min TTL)
+  const token = generateToken(code, 2, 600);
 
-  // Check active SafeLink Mode — Defaults to "google" (urllinkshort.in style)
+  // Extract client IP and User-Agent for fail-safe session pairing
+  const headerList = await headers();
+  const ip =
+    headerList.get("x-forwarded-for")?.split(",")[0].trim() ||
+    headerList.get("x-real-ip") ||
+    "127.0.0.1";
+  const userAgent = headerList.get("user-agent") || "";
+
+  // Register session pairing: guarantees token can be recovered even if browser sandbox wipes cookies/storage
+  registerSession(ip, userAgent, code, token, 600);
+
+  // SafeLink mode from config or environment
   const mode = (process.env.SAFELINK_MODE ||
     process.env.NEXT_PUBLIC_SAFELINK_MODE ||
-    "google") as "google" | "direct_blog" | "direct";
+    MONETIZATION_CONFIG.mode) as "safe_search_gateway" | "direct_blog" | "direct";
 
-  if (mode === "google" || mode === "direct_blog") {
+  if (mode === "safe_search_gateway" || mode === "direct_blog") {
     // 1. Create and store SafeLink session cookie
-    const sessionStr = createSafeLinkSession(code, token, mode, 300);
+    const sessionStr = createSafeLinkSession(
+      code,
+      token,
+      mode === "safe_search_gateway" ? "google" : "direct_blog",
+      600
+    );
     const cookieStore = await cookies();
     cookieStore.set(SAFELINK_COOKIE_NAME, sessionStr, {
-      maxAge: 300,
+      maxAge: 600,
       path: "/",
       httpOnly: false,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
     });
 
-    const headerList = await headers();
-    const host = headerList.get("host") || "localhost:3000";
+    const host = headerList.get("host") || "yashlab.me";
     const searchDomain =
       process.env.SAFELINK_SEARCH_DOMAIN ||
       process.env.NEXT_PUBLIC_SAFELINK_SEARCH_DOMAIN ||
-      host;
+      "yashlab.me";
 
     const articleSlug = getRandomArticleSlug();
+    const article = getArticleBySlug(articleSlug);
 
-    // 2. Render the Google Redirect Gateway
+    // 2. Render the Google Redirect Gateway with rotated natural keyword
     return (
       <GoogleRedirectGateway
         code={link.code}
         title={link.title}
         searchDomain={searchDomain}
-        mode={mode}
+        mode={mode === "safe_search_gateway" ? "google" : "direct_blog"}
         articleSlug={articleSlug}
+        articleTitle={article?.title}
       />
     );
   }
 
-  // Fallback to standard 2-step direct interstitial flow
+  // Fallback to standard direct interstitial flow
   return (
     <Step1Client
       code={link.code}
