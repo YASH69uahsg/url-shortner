@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "@sentry/nextjs": "^10.73.0",
     "nanoid": "^5.0.9",
     "next": "^14.2.18",
     "prisma": "^5.22.0",
