@@ -1,9 +1,8 @@
 import { notFound } from "next/navigation";
-import { cookies, headers } from "next/headers";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/tokens";
 import {
-  SAFELINK_COOKIE_NAME,
   createSafeLinkSession,
 } from "@/lib/safelink";
 import { registerSession } from "@/lib/session-pairing";
@@ -82,23 +81,14 @@ export default async function Step1Page({ params }: Props) {
     MONETIZATION_CONFIG.mode) as "safe_search_gateway" | "direct_blog" | "direct";
 
   if (mode === "safe_search_gateway" || mode === "direct_blog") {
-    // 1. Create and store SafeLink session cookie
+    // 1. Create SafeLink session string
     const sessionStr = createSafeLinkSession(
       code,
       token,
       mode === "safe_search_gateway" ? "google" : "direct_blog",
       600
     );
-    const cookieStore = await cookies();
-    cookieStore.set(SAFELINK_COOKIE_NAME, sessionStr, {
-      maxAge: 600,
-      path: "/",
-      httpOnly: false,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-    });
 
-    const host = headerList.get("host") || "yashlab.me";
     const searchDomain =
       process.env.SAFELINK_SEARCH_DOMAIN ||
       process.env.NEXT_PUBLIC_SAFELINK_SEARCH_DOMAIN ||
@@ -116,6 +106,7 @@ export default async function Step1Page({ params }: Props) {
         mode={mode === "safe_search_gateway" ? "google" : "direct_blog"}
         articleSlug={articleSlug}
         articleTitle={article?.title}
+        sessionStr={sessionStr}
       />
     );
   }

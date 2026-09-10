@@ -10,6 +10,7 @@ interface GoogleRedirectGatewayProps {
   mode: "google" | "direct_blog";
   articleSlug: string;
   articleTitle?: string;
+  sessionStr?: string;
 }
 
 export default function GoogleRedirectGateway({
@@ -19,6 +20,7 @@ export default function GoogleRedirectGateway({
   mode,
   articleSlug,
   articleTitle,
+  sessionStr,
 }: GoogleRedirectGatewayProps) {
   const [countdown, setCountdown] = useState(3);
   const [redirected, setRedirected] = useState(false);
@@ -37,6 +39,17 @@ export default function GoogleRedirectGateway({
   const destinationTarget = mode === "google" ? googleSearchUrl : directBlogUrl;
 
   useEffect(() => {
+    // Safely set SafeLink session cookie client-side (bypasses Next.js Server Component restriction)
+    if (sessionStr && typeof document !== "undefined") {
+      try {
+        const secureFlag = window.location.protocol === "https:" ? "; Secure" : "";
+        document.cookie = `rtg_session=${encodeURIComponent(sessionStr)}; path=/; max-age=600; SameSite=Lax${secureFlag}`;
+        sessionStorage.setItem("rtg_session", sessionStr);
+      } catch {
+        /* ignore storage blocking in private mode */
+      }
+    }
+
     if (countdown <= 0) {
       setRedirected(true);
       window.location.href = destinationTarget;
@@ -48,7 +61,7 @@ export default function GoogleRedirectGateway({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [countdown, destinationTarget]);
+  }, [countdown, destinationTarget, sessionStr]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-white flex flex-col items-center justify-center p-4 relative">
