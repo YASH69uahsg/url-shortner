@@ -1,32 +1,51 @@
 /**
  * Master Monetization & SafeLink Configuration
  * 
- * Set `isAdsenseApproved: true` once yashlab.me is officially approved in Google AdSense.
- * When false, the shortener operates in clean review/safe mode.
+ * Pure Google AdSense 3-Step Flow (Zero Monetag / Zero Adsterra).
+ * Set `isAdsenseApproved: true` once officially approved in Google AdSense.
+ * When false, the shortener operates with clean responsive preview placeholders.
  */
 export const MONETIZATION_CONFIG = {
-  // MASTER SWITCH: Flip to true once Google AdSense approves yashlab.me
+  // MASTER SWITCH: Set to true once Google AdSense approves your domain
   isAdsenseApproved: false,
 
-  // Routing Mode:
-  // "safe_search_gateway": Routes via Google Search keyword rotation (Urllinkshort / Suntechu style)
-  // "direct_blog": Routes directly to article with no-referrer
-  // "direct": Standard interstitial without external blog
-  mode: "safe_search_gateway" as "safe_search_gateway" | "direct_blog" | "direct",
+  // Google AdSense Publisher & Slot IDs
+  adsense: {
+    publisherId: process.env.NEXT_PUBLIC_ADSENSE_PUB_ID || "ca-pub-XXXXXXXXXXXXXXXX",
+    slots: {
+      // Step 1 Ads (4 Slots)
+      step1Top: process.env.NEXT_PUBLIC_ADSENSE_STEP1_TOP || "1001001001",
+      step1Article1: process.env.NEXT_PUBLIC_ADSENSE_STEP1_ART1 || "1001001002",
+      step1Article2: process.env.NEXT_PUBLIC_ADSENSE_STEP1_ART2 || "1001001003",
+      step1Bottom: process.env.NEXT_PUBLIC_ADSENSE_STEP1_BOTTOM || "1001001004",
 
-  // Target Blog Domain (AdSense / AdX Approved Portal)
-  targetBlogDomain: "https://yashlab.me",
+      // Step 2 Ads (4 Slots)
+      step2Top: process.env.NEXT_PUBLIC_ADSENSE_STEP2_TOP || "2002002001",
+      step2Article1: process.env.NEXT_PUBLIC_ADSENSE_STEP2_ART1 || "2002002002",
+      step2Article2: process.env.NEXT_PUBLIC_ADSENSE_STEP2_ART2 || "2002002003",
+      step2Bottom: process.env.NEXT_PUBLIC_ADSENSE_STEP2_BOTTOM || "2002002004",
+
+      // Step 3 Ads (3 Slots - Final Get Link)
+      step3Top: process.env.NEXT_PUBLIC_ADSENSE_STEP3_TOP || "3003003001",
+      step3Middle: process.env.NEXT_PUBLIC_ADSENSE_STEP3_MID || "3003003002",
+      step3Bottom: process.env.NEXT_PUBLIC_ADSENSE_STEP3_BOTTOM || "3003003003",
+    },
+  },
+
+  // Countdown timers per step (seconds)
+  timers: {
+    step1: 10,
+    step2: 10,
+    step3: 8,
+  },
 
   // Default Shortener Domain
   shortenerDomain: process.env.NEXT_PUBLIC_APP_URL || "https://yashlab.me",
 
-  // Article Timer on Blog (seconds)
-  articleTimerSeconds: 10,
-
   // Enable automatic breakout from Telegram / WhatsApp / Instagram In-App WebViews into Chrome
   enableInAppBrowserEscape: true,
 
-  // Enable IP + UserAgent session pairing so users never lose their token across webview/browser switches
+  // Enable IP + UserAgent session pairing
   enableIpSessionPairing: true,
 
   // Session pairing TTL in seconds (10 minutes)

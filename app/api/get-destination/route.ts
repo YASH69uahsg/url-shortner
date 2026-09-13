@@ -47,8 +47,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify session token
-    const payload = verifyToken(token, code, 2);
+    // Verify session token (Step 3 final or Step 2)
+    const payload = verifyToken(token, code, 3) || verifyToken(token, code, 2);
     if (!payload) {
       return NextResponse.json(
         { error: "Invalid or expired session. Please start over." },

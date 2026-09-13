@@ -1,11 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { verifyToken, generateToken } from "@/lib/tokens";
-import { resolveSession, registerSession } from "@/lib/session-pairing";
+import { verifyToken } from "@/lib/tokens";
+import { resolveSession } from "@/lib/session-pairing";
 import { MONETIZATION_CONFIG } from "@/lib/monetization-config";
-import { ARTICLES, Article } from "@/lib/articles-data";
-import Step2Client from "./Step2Client";
+import Step3Client from "./Step3Client";
 
 interface Props {
   params: Promise<{ code: string }>;
@@ -15,13 +14,13 @@ interface Props {
 export async function generateMetadata({ params }: Props) {
   const { code } = await params;
   return {
-    title: `Verification Stage 2 — ${code}`,
-    description: "Step 2 of 3: Security check in progress.",
+    title: `Final Step — Unlocking Link ${code}`,
+    description: "Final security verification before opening your destination link.",
     robots: "noindex, nofollow",
   };
 }
 
-export default async function Step2Page({ params, searchParams }: Props) {
+export default async function Step3Page({ params, searchParams }: Props) {
   const { code } = await params;
   const resolvedSearchParams = await searchParams;
   let token =
@@ -36,6 +35,7 @@ export default async function Step2Page({ params, searchParams }: Props) {
       id: true,
       code: true,
       title: true,
+      // destinationUrl is intentionally excluded
     },
   });
 
@@ -43,7 +43,7 @@ export default async function Step2Page({ params, searchParams }: Props) {
     notFound();
   }
 
-  // FAIL-SAFE: If token is missing in URL, recover from IP + UserAgent session pairing
+  // FAIL-SAFE: Recover token from IP + UserAgent session pairing if wiped
   const headerList = await headers();
   const ip =
     headerList.get("x-forwarded-for")?.split(",")[0].trim() ||
@@ -58,46 +58,33 @@ export default async function Step2Page({ params, searchParams }: Props) {
     }
   }
 
-  // Validate Step 2 incoming token
   if (!token) {
     redirect(`/s/${code}`);
   }
 
-  const payload = verifyToken(token, code, 2);
+  // Validate Step 3 token
+  const payload = verifyToken(token, code, 3);
   if (!payload) {
     redirect(`/s/${code}`);
   }
 
-  // Record Step 2 view (fire-and-forget)
+  // Record Step 3 view (fire-and-forget)
   prisma.view
     .create({
       data: {
         linkId: link.id,
-        step: 2,
+        step: 3,
       },
     })
     .catch(() => {
       /* silently fail */
     });
 
-  // Generate Step 3 token (10 min TTL)
-  const step3Token = generateToken(code, 3, 600);
-
-  if (MONETIZATION_CONFIG.enableIpSessionPairing) {
-    registerSession(ip, userAgent, code, step3Token, 600);
-  }
-
-  // Pick related Article #2 (select second half of articles or different index)
-  const half = Math.floor(ARTICLES.length / 2);
-  const randomIndex = half + Math.floor(Math.random() * (ARTICLES.length - half));
-  const article2: Article = ARTICLES[randomIndex] || ARTICLES[1];
-
   return (
-    <Step2Client
+    <Step3Client
       code={link.code}
       title={link.title}
-      token={step3Token}
-      article={article2}
+      token={token}
     />
   );
 }
